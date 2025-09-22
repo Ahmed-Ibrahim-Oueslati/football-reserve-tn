@@ -1,4 +1,4 @@
-const { PrismaClient, City, SurfaceType } = require('@prisma/client');
+const { PrismaClient, City, SurfaceType } = require('../src/generated/prisma');
 
 const prisma = new PrismaClient();
 
@@ -14,8 +14,8 @@ async function main() {
       pricePerHour: 15000,
       capacity: 22,
       surfaceType: SurfaceType.GRASS,
-      facilities: ['parking', 'showers', 'lighting', 'changing_rooms'],
-      images: ['/images/fields/el-menzah.jpg'],
+      facilities: ['parking', 'showers', 'lighting', 'changing_rooms'].join(','),
+      images: ['/images/fields/el-menzah.jpg'].join(','),
     },
     {
       name: 'Complexe Sportif Ariana',
@@ -27,8 +27,8 @@ async function main() {
       pricePerHour: 12000,
       capacity: 14,
       surfaceType: SurfaceType.ARTIFICIAL_TURF,
-      facilities: ['parking', 'lighting', 'cafeteria'],
-      images: ['/images/fields/ariana-complex.jpg'],
+      facilities: ['parking', 'lighting', 'cafeteria'].join(','),
+      images: ['/images/fields/ariana-complex.jpg'].join(','),
     },
   ];
 

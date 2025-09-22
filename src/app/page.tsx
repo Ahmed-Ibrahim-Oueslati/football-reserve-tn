@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FieldList } from '@/src/components/field/FieldList';
+import { FieldList } from '@/components/field/FieldList';
 
 type Field = {
   id: string;

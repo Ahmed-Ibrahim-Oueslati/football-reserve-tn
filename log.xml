@@ -71,6 +71,28 @@
     <detail>Created src/app/page.tsx to list fields via /api/fields and replace Next.js default page.</detail>
     <status>completed</status>
   </entry>
+  <entry>
+    <timestamp>2025-09-22T01:15:00Z</timestamp>
+    <task>Security Fix</task>
+    <detail>Replaced hardcoded database URL in prisma/schema.prisma with environment variable env("DATABASE_URL") to prevent secret leaks.</detail>
+    <status>completed</status>
+  </entry>
+  <entry>
+    <timestamp>2025-09-22T01:16:00Z</timestamp>
+    <task>Configuration</task>
+    <detail>Created .env file with DATABASE_URL, DIRECT_URL, and NEXTAUTH_SECRET to securely store environment-specific variables.</detail>
+    <status>completed</status>
+  </entry>
+  <entry>
+    <timestamp>2025-09-22T01:20:00Z</timestamp>
+    <task>Cleanup</task>
+    <detail>Neutralized unused src/lib/supabaseClient.ts file by overwriting it with an empty string to remove conflicting code.</detail>
+    <status>completed</status>
+  </entry>
+  <entry>
+    <timestamp>2025-09-22T01:21:00Z</timestamp>
+    .task>Cleanup</task>
+    <detail>Uninstalled the @supabase/supabase-js package to remove unused dependencies and resolve conflicts with the Prisma ORM.</detail>
+    <status>completed</status>
+  </entry>
 </log>
-
-

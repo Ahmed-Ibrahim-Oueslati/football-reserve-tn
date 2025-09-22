@@ -25,7 +25,13 @@ export async function GET(request: Request) {
       orderBy: { name: 'asc' },
     });
 
-    return NextResponse.json({ success: true, data: { fields } });
+    const transformedFields = fields.map(field => ({
+      ...field,
+      facilities: field.facilities.split(','),
+      images: field.images.split(','),
+    }));
+
+    return NextResponse.json({ success: true, data: { fields: transformedFields } });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: { message: error?.message || 'Internal error' } },

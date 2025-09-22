@@ -7,9 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = "postgresql://postgres:Amaris%402024%401003@db.fmhrtulsuebrrcwblfim.supabase.co:5432/postgres"
-  directUrl = "postgresql://postgres:Amaris%402024%401003@db.fmhrtulsuebrrcwblfim.supabase.co:5432/postgres"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 enum City {
@@ -61,8 +60,8 @@ model Field {
   pricePerHour  Int
   capacity      Int
   surfaceType   SurfaceType
-  facilities    String[]
-  images        String[]
+  facilities    String
+  images        String
   isActive      Boolean             @default(true)
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
