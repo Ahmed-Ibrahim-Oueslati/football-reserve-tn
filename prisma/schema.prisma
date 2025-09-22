@@ -1,118 +1,334 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Football Reserve TN - Database Schema
+// Prisma schema defining the complete data model
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-enum City {
-  TUNIS
-  ARIANA
-  BEN_AROUS
-}
-
-enum SurfaceType {
-  GRASS
-  ARTIFICIAL_TURF
-  CONCRETE
-  INDOOR
-}
-
-enum ReservationStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
-}
-
-enum Role {
-  USER
-  ADMIN
-}
+// ================================
+// User Management
+// ================================
 
 model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  firstName     String?
+  lastName      String?
+  phone         String?
+  avatar        String?
+  emailVerified DateTime?
+  
+  // Authentication
+  password      String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // User preferences
+  language      String    @default("fr") // "ar", "fr", "en"
+  timezone      String    @default("Africa/Tunis")
+  notifications Boolean   @default(true)
+  
+  // Relations
+  bookings      Booking[]
+  reviews       Review[]
+  ownedFields   Field[]   @relation("FieldOwner")
+  
+  // Metadata
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ================================
+// Field Management
+// ================================
+
+model Field {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  
+  // Location
+  address     String
+  city        String
+  region      String
+  latitude    Float?
+  longitude   Float?
+  
+  // Field Details
+  fieldType   FieldType @default(FOOTBALL_11)
+  surface     FieldSurface @default(GRASS)
+  covered     Boolean   @default(false)
+  lighting    Boolean   @default(false)
+  
+  // Pricing
+  pricePerHour Decimal  @db.Decimal(8,2)
+  currency     String   @default("TND")
+  
+  // Availability
+  isActive     Boolean  @default(true)
+  openingTime  String   // "06:00"
+  closingTime  String   // "23:00"
+  
+  // Media
+  images       String[] @default([])
+  thumbnail    String?
+  
+  // Relations
+  ownerId      String
+  owner        User      @relation("FieldOwner", fields: [ownerId], references: [id])
+  bookings     Booking[]
+  reviews      Review[]
+  amenities    FieldAmenity[]
+  availability FieldAvailability[]
+  
+  // Metadata
+  averageRating Float?   @default(0)
+  totalReviews  Int      @default(0)
+  totalBookings Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("fields")
+}
+
+model FieldAmenity {
+  id       String  @id @default(cuid())
+  fieldId  String
+  field    Field   @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  
+  amenity  AmenityType
+  isActive Boolean @default(true)
+
+  @@unique([fieldId, amenity])
+  @@map("field_amenities")
+}
+
+model FieldAvailability {
+  id        String    @id @default(cuid())
+  fieldId   String
+  field     Field     @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  
+  dayOfWeek Int       // 0 = Sunday, 1 = Monday, etc.
+  startTime String    // "06:00"
+  endTime   String    // "23:00"
+  isActive  Boolean   @default(true)
+  
+  // Special dates (holidays, maintenance, etc.)
+  specialDate DateTime?
+  reason      String?
+
+  @@map("field_availability")
+}
+
+// ================================
+// Booking Management
+// ================================
+
+model Booking {
+  id          String     @id @default(cuid())
+  
+  // Core booking info
+  fieldId     String
+  field       Field      @relation(fields: [fieldId], references: [id])
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  
+  // Booking details
+  bookingDate DateTime   @db.Date
+  startTime   DateTime
+  endTime     DateTime
+  duration    Int        // in minutes
+  
+  // Pricing
+  totalAmount Decimal    @db.Decimal(8,2)
+  currency    String     @default("TND")
+  
+  // Status and metadata
+  status      BookingStatus @default(PENDING)
+  notes       String?    @db.Text
+  
+  // Payment relation
+  payments    Payment[]
+  
+  // Timestamps
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  cancelledAt DateTime?
+
+  @@unique([fieldId, startTime]) // Prevent double booking
+  @@map("bookings")
+}
+
+// ================================
+// Payment System
+// ================================
+
+model Payment {
+  id              String        @id @default(cuid())
+  
+  // Relations
+  bookingId       String
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+  
+  // Payment details
+  amount          Decimal       @db.Decimal(8,2)
+  currency        String        @default("TND")
+  paymentMethod   PaymentMethod
+  
+  // Payment processor info
+  stripePaymentId String?       @unique
+  stripeSessionId String?       @unique
+  
+  // Status
+  status          PaymentStatus @default(PENDING)
+  failureReason   String?
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  paidAt          DateTime?
+  refundedAt      DateTime?
+
+  @@map("payments")
+}
+
+// ================================
+// Review System
+// ================================
+
+model Review {
   id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  phone     String?
-  role      Role     @default(USER)
+  
+  // Relations
+  fieldId   String
+  field     Field    @relation(fields: [fieldId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  // Review content
+  rating    Int      // 1-5 stars
+  title     String?
+  comment   String?  @db.Text
+  
+  // Metadata
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  reservations Reservation[]
+  @@unique([fieldId, userId]) // One review per user per field
+  @@map("reviews")
 }
 
-model Field {
-  id            String              @id @default(cuid())
-  name          String
-  description   String?
-  city          City
-  address       String
-  latitude      Float
-  longitude     Float
-  pricePerHour  Int
-  capacity      Int
-  surfaceType   SurfaceType
-  facilities    String
-  images        String
-  isActive      Boolean             @default(true)
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+// ================================
+// Enums
+// ================================
 
-  reservations  Reservation[]
-  availability  FieldAvailability[]
-
-  @@index([city])
-  @@index([pricePerHour])
+enum UserRole {
+  USER
+  FIELD_OWNER
+  ADMIN
+  SUPER_ADMIN
 }
 
-model Reservation {
-  id          String            @id @default(cuid())
-  fieldId     String
-  userId      String
-  date        DateTime
-  startTime   DateTime
-  endTime     DateTime
-  totalPrice  Int
-  status      ReservationStatus @default(PENDING)
-  weatherData Json?
-  notes       String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  field Field @relation(fields: [fieldId], references: [id])
-  user  User  @relation(fields: [userId], references: [id])
-
-  @@index([fieldId, date])
-  @@index([userId, date])
+enum FieldType {
+  FOOTBALL_5   // 5v5
+  FOOTBALL_7   // 7v7
+  FOOTBALL_11  // Full field 11v11
 }
 
-model FieldAvailability {
-  id        String   @id @default(cuid())
-  fieldId   String
-  dayOfWeek Int      // 0-6 (Sun-Sat)
-  openTime  String   // HH:mm
-  closeTime String   // HH:mm
-
-  field Field @relation(fields: [fieldId], references: [id])
-
-  @@index([fieldId, dayOfWeek])
+enum FieldSurface {
+  GRASS
+  ARTIFICIAL_GRASS
+  CONCRETE
+  CLAY
 }
 
-model WeatherCache {
-  id         String   @id @default(cuid())
-  city       City
-  date       DateTime
-  weatherData Json
-  expiresAt  DateTime
+enum AmenityType {
+  PARKING
+  CHANGING_ROOMS
+  SHOWERS
+  CAFETERIA
+  WIFI
+  SECURITY
+  EQUIPMENT_RENTAL
+  FIRST_AID
+  REFEREE
+  SCOREBOARD
+}
 
-  @@unique([city, date])
-  @@index([expiresAt])
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  BANK_TRANSFER
+  CASH
+  MOBILE_PAYMENT
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
 }
