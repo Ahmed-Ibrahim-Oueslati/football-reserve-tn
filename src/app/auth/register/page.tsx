@@ -79,7 +79,7 @@ export default function RegisterPage() {
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour à l'accueil
+          Retour à l&apos;accueil
         </Link>
 
         <Card className="shadow-lg">
@@ -88,7 +88,7 @@ export default function RegisterPage() {
               <span className="text-white font-bold text-lg">FR</span>
             </div>
             <CardTitle className="text-2xl">Créer un compte</CardTitle>
-            <CardDescription>Rejoignez Football Reserve TN dès aujourd'hui</CardDescription>
+            <CardDescription>Rejoignez Football Reserve TN dès aujourd&apos;hui</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -195,9 +195,9 @@ export default function RegisterPage() {
                   onCheckedChange={(checked) => handleInputChange("acceptTerms", checked as boolean)}
                 />
                 <Label htmlFor="terms" className="text-sm">
-                  J'accepte les{" "}
+                  J&apos;accepte les{" "}
                   <Link href="/terms" className="text-green-600 hover:text-green-700">
-                    conditions d'utilisation
+                    conditions d&apos;utilisation
                   </Link>{" "}
                   et la{" "}
                   <Link href="/privacy" className="text-green-600 hover:text-green-700">

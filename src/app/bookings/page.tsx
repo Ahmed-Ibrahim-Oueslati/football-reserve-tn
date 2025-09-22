@@ -171,7 +171,7 @@ export default function BookingsPage() {
                   <CardContent className="text-center py-12">
                     <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">Aucune réservation à venir</h3>
-                    <p className="text-muted-foreground mb-4">Vous n'avez pas encore de réservations programmées.</p>
+                    <p className="text-muted-foreground mb-4">Vous n&apos;avez pas encore de réservations programmées.</p>
                     <Button className="bg-green-600 hover:bg-green-700">Réserver un terrain</Button>
                   </CardContent>
                 </Card>
@@ -209,7 +209,7 @@ export default function BookingsPage() {
           {/* Contact Support */}
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle className="text-lg">Besoin d'aide ?</CardTitle>
+              <CardTitle className="text-lg">Besoin d&apos;aide ?</CardTitle>
               <CardDescription>Notre équipe est là pour vous aider avec vos réservations</CardDescription>
             </CardHeader>
             <CardContent>

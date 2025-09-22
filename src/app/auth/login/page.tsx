@@ -53,7 +53,7 @@ export default function LoginPage() {
         {/* Back Button */}
         <Link href="/" className="inline-flex items-center text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour à l'accueil
+          Retour à l&apos;accueil
         </Link>
 
         <Card className="shadow-lg">
