@@ -1,60 +1,29 @@
-import './globals.css';
-import Link from 'next/link';
+import type React from "react"
+import type { Metadata } from "next"
+import { GeistSans } from "geist/font/sans"
+import { GeistMono } from "geist/font/mono"
+import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
+import "./globals.css"
 
-export const metadata = {
-  title: 'Football Reserve TN',
-  description: 'Reserve football fields in Tunis',
-};
-
-const Header = () => (
-  <header className="bg-gray-800 shadow-md">
-    <div className="container mx-auto px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <Link href="/" className="text-2xl font-bold text-white">
-            Football Reserve TN
-          </Link>
-        </div>
-        <nav className="hidden md:flex space-x-4">
-          <Link href="/" className="text-gray-300 hover:text-white">
-            Home
-          </Link>
-          <Link href="/fields" className="text-gray-300 hover:text-white">
-            Fields
-          </Link>
-          <Link href="/reservations" className="text-gray-300 hover:text-white">
-            My Reservations
-          </Link>
-        </nav>
-      </div>
-    </div>
-  </header>
-);
-
-const Footer = () => (
-  <footer className="bg-gray-800 mt-12">
-    <div className="container mx-auto px-6 py-4">
-      <p className="text-center text-gray-400">
-        © 2025 Football Reserve TN. All rights reserved.
-      </p>
-    </div>
-  </footer>
-);
+export const metadata: Metadata = {
+  title: "Football Reserve TN - Réservation de terrains de football",
+  description:
+    "Réservez facilement votre terrain de football en Tunisie. La plateforme de référence pour les réservations sportives.",
+  generator: "v0.app",
+}
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
     <html lang="en">
-      <body className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow container mx-auto px-6 py-8">
-          {children}
-        </main>
-        <Footer />
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+        <Suspense fallback={null}>{children}</Suspense>
+        <Analytics />
       </body>
     </html>
-  );
+  )
 }
