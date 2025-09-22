@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:Amaris%402024%401003@db.fmhrtulsuebrrcwblfim.supabase.co:5432/postgres"
+  directUrl = "postgresql://postgres:Amaris%402024%401003@db.fmhrtulsuebrrcwblfim.supabase.co:5432/postgres"
+}
+
+enum City {
+  TUNIS
+  ARIANA
+  BEN_AROUS
+}
+
+enum SurfaceType {
+  GRASS
+  ARTIFICIAL_TURF
+  CONCRETE
+  INDOOR
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservations Reservation[]
+}
+
+model Field {
+  id            String              @id @default(cuid())
+  name          String
+  description   String?
+  city          City
+  address       String
+  latitude      Float
+  longitude     Float
+  pricePerHour  Int
+  capacity      Int
+  surfaceType   SurfaceType
+  facilities    String[]
+  images        String[]
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  reservations  Reservation[]
+  availability  FieldAvailability[]
+
+  @@index([city])
+  @@index([pricePerHour])
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  fieldId     String
+  userId      String
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  totalPrice  Int
+  status      ReservationStatus @default(PENDING)
+  weatherData Json?
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  field Field @relation(fields: [fieldId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@index([fieldId, date])
+  @@index([userId, date])
+}
+
+model FieldAvailability {
+  id        String   @id @default(cuid())
+  fieldId   String
+  dayOfWeek Int      // 0-6 (Sun-Sat)
+  openTime  String   // HH:mm
+  closeTime String   // HH:mm
+
+  field Field @relation(fields: [fieldId], references: [id])
+
+  @@index([fieldId, dayOfWeek])
+}
+
+model WeatherCache {
+  id         String   @id @default(cuid())
+  city       City
+  date       DateTime
+  weatherData Json
+  expiresAt  DateTime
+
+  @@unique([city, date])
+  @@index([expiresAt])
+}
